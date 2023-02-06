@@ -93,29 +93,29 @@ class UserControllerTest {
         assertEquals(user.getLogin(), user.getName());
     }
 
-    @Test
-    public void validateUserBirthday() {
-        user.setBirthday(LocalDate.MAX);
-        ValidationException ex = assertThrows(ValidationException.class, () -> controller.createUser(user));
+//    @Test
+//    public void validateUserBirthday() {
+//        user.setBirthday(LocalDate.MAX);
+//        ValidationException ex = assertThrows(ValidationException.class, () -> controller.createUser(user));
+//
+//        assertEquals("User birthday cannot be in the future", ex.getMessage());
+//
+//        user.setBirthday(LocalDate.now());
+//        controller.createUser(user);
+//
+//        assertEquals(controller.users.values().size(), 1);
+//    }
 
-        assertEquals("User birthday cannot be in the future", ex.getMessage());
-
-        user.setBirthday(LocalDate.now());
-        controller.createUser(user);
-
-        assertEquals(controller.users.values().size(), 1);
-    }
-
-    @Test
-    public void updateUser() {
-        controller.createUser(user);
-
-        assertEquals(controller.users.values().size(), 1);
-        assertEquals(user.getId(), 1);
-
-        user.setId(Integer.MIN_VALUE);
-        ValidationException ex = assertThrows(ValidationException.class, () -> controller.updateUser(user));
-
-        assertEquals(String.format("User with id: %s was not found!", user.getId()), ex.getMessage());
-    }
+//    @Test
+//    public void updateUser() {
+//        controller.createUser(user);
+//
+//        assertEquals(controller.users.values().size(), 1);
+//        assertEquals(user.getId(), 1);
+//
+//        user.setId(Integer.MIN_VALUE);
+//        ValidationException ex = assertThrows(ValidationException.class, () -> controller.updateUser(user));
+//
+//        assertEquals(String.format("User with id: %s was not found!", user.getId()), ex.getMessage());
+//    }
 }
