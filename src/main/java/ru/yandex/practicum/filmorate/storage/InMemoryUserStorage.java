@@ -65,7 +65,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     private void userValidation(User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
             log.debug("user validation error: user with email {} was attempted to create.", user.getEmail());
             throw new ValidationException("User email cannot be empty.");
         }

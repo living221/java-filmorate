@@ -68,7 +68,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     private void filmValidation(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
+        if (film.getName() == null || film.getName().isEmpty()) {
             log.debug("film validation error: film with name {} was attempted to add.", film.getName());
             throw new ValidationException("Film name cannot be empty!");
         }
