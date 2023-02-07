@@ -21,8 +21,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     private int generatorId = 0;
 
     private int generateId() {
-        generatorId++;
-        return generatorId;
+        return ++generatorId;
     }
 
     @Override
@@ -52,7 +51,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.info("film with id {} was updated. film: {}", film.getId(), film);
             return film;
         } else {
-            log.debug("film update error: film with id {} was attempted to update.", film.getId());
+            log.error("film update error: film with id {} was attempted to update.", film.getId());
             throw new FilmNotFoundException(String.format("Film with id: %s was not found!", film.getId()));
         }
 
@@ -63,7 +62,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.containsKey(filmId)) {
             return films.get(filmId);
         } else {
-            log.debug("get film by id error: film with id {} not exists.", filmId);
+            log.error("get film by id error: film with id {} not exists.", filmId);
             throw new FilmNotFoundException(String.format("Film with id: %s was not found!", filmId));
         }
     }

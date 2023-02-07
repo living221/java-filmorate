@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -16,16 +16,11 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-
-    @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
 
     public List<Film> getFilms() {
         return filmStorage.getFilms();
@@ -50,16 +45,12 @@ public class FilmService {
     public void addLike(int filmId, int userId) {
         validateFilmAndUser(filmId, userId);
 
-        for (Film film : filmStorage.getFilms()) {
-            if (filmId == film.getId()) {
-                for (Integer like : film.getLikes()) {
-                    if (userId == like) {
-                        log.debug("film service add like to film error: " +
+        if (filmStorage.getFilms().stream().anyMatch(f -> f.getId() == filmId)){
+            if (filmStorage.getFilmById(filmId).getLikes().contains(userId)) {
+                log.debug("film service add like to film error: " +
                                 "user with id {} already add like to film with id {}.", userId, filmId);
                         throw new ValidationException(String.format("user with id %s already add like " +
                                 "to film with id %s.", userId, filmId));
-                    }
-                }
             }
         }
 

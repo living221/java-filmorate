@@ -61,8 +61,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     private int generateId() {
-        generatorId++;
-        return generatorId;
+        return ++generatorId;
     }
 
     private void userValidation(User user) {
