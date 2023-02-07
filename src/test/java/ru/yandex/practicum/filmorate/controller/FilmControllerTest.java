@@ -9,7 +9,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
 
@@ -44,9 +43,18 @@ class FilmControllerTest {
     }
 
     @Test
-    @DisplayName("Тестирование фильма с пустым названием")
+    @DisplayName("Тестирование фильма с пустым названием только из пробелов")
     void validateFilmBlankName() {
         film.setName("                    ");
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.createFilm(film));
+
+        assertEquals("Film name cannot be empty!", ex.getMessage());
+    }
+
+    @Test
+    @DisplayName("Тестирование фильма с пустым названием")
+    void validateFilmEmptyName() {
+        film.setName("");
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.createFilm(film));
 
         assertEquals("Film name cannot be empty!", ex.getMessage());

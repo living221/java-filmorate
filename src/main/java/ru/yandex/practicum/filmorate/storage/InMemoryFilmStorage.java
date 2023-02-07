@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -68,7 +65,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     private void filmValidation(Film film) {
-        if (film.getName() == null || film.getName().isEmpty()) {
+        if (Objects.isNull(film.getName()) || film.getName().isBlank()) {
             log.debug("film validation error: film with name {} was attempted to add.", film.getName());
             throw new ValidationException("Film name cannot be empty!");
         }

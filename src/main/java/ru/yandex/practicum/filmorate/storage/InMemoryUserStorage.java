@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -65,7 +62,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     private void userValidation(User user) {
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+        if (Objects.isNull(user.getEmail()) || user.getEmail().isBlank()) {
             log.debug("user validation error: user with email {} was attempted to create.", user.getEmail());
             throw new ValidationException("User email cannot be empty.");
         }
