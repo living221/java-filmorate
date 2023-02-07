@@ -1,10 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -32,6 +34,7 @@ class FilmControllerTest {
     }
 
     @Test
+    @DisplayName("Тестирование фильма с названием null")
     void validateFilmWithName() {
         film.setName(null);
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.createFilm(film));
@@ -40,6 +43,7 @@ class FilmControllerTest {
     }
 
     @Test
+    @DisplayName("Тестирование фильма с пустым названием только из пробелов")
     void validateFilmBlankName() {
         film.setName("                    ");
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.createFilm(film));
@@ -47,8 +51,18 @@ class FilmControllerTest {
         assertEquals("Film name cannot be empty!", ex.getMessage());
     }
 
+    @Test
+    @DisplayName("Тестирование фильма с пустым названием")
+    void validateFilmEmptyName() {
+        film.setName("");
+        ValidationException ex = assertThrows(ValidationException.class, () -> controller.createFilm(film));
+
+        assertEquals("Film name cannot be empty!", ex.getMessage());
+    }
+
 
     @Test
+    @DisplayName("Тестирование длинны описания фильма.")
     void validateFilmLongDescription() {
         film.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ullamcorper rhoncus " +
                 "sem nec commodo. Nam eu sollicitudin eros. Cras nec convallis erat. Nam at venenatis sem. " +
@@ -60,11 +74,12 @@ class FilmControllerTest {
 
 
     @Test
+    @DisplayName("Тестирование даты релиза фильма")
     void validateFilmIncorrectDate() {
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        controller.films.put(film.getId(), film);
+        controller.createFilm(film);
 
-        assertEquals(controller.films.values().size(), 1);
+        assertEquals(controller.getFilms().size(), 1);
 
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.createFilm(film));
@@ -74,11 +89,12 @@ class FilmControllerTest {
 
 
     @Test
+    @DisplayName("Тестирование длительности фильма")
     void validateFilmDuration() {
         film.setDuration(1);
-        controller.films.put(film.getId(), film);
+        controller.createFilm(film);
 
-        assertEquals(controller.films.values().size(), 1);
+        assertEquals(controller.getFilms().size(), 1);
 
         film.setDuration(0);
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.createFilm(film));
@@ -92,14 +108,15 @@ class FilmControllerTest {
     }
 
     @Test
+    @DisplayName("Тестирование обновления данных фильма")
     void updateFilm() {
         controller.createFilm(film);
 
-        assertEquals(controller.films.values().size(), 1);
+        assertEquals(controller.getFilms().size(), 1);
         assertEquals(film.getId(), 1);
 
         film.setId(Integer.MIN_VALUE);
-        ValidationException ex = assertThrows(ValidationException.class, () -> controller.updateFilm(film));
+        FilmNotFoundException ex = assertThrows(FilmNotFoundException.class, () -> controller.updateFilm(film));
 
         assertEquals(String.format("Film with id: %s was not found!", film.getId()), ex.getMessage());
     }
