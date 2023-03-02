@@ -25,12 +25,13 @@ class UserControllerTest {
 
     @BeforeEach
     public void init() {
-        user = new User();
-        user.setId(1);
-        user.setName("John Smith");
-        user.setLogin("login");
-        user.setEmail("example@email.com");
-        user.setBirthday(LocalDate.of(1913, 5, 17));
+        user = User.builder()
+                .id(1)
+                .name("John Smith")
+                .login("login")
+                .email("example@email.com")
+                .birthday(LocalDate.of(1913, 5, 17))
+                .build();
     }
 
     @Test

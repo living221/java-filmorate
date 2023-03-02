@@ -55,4 +55,22 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new FilmNotFoundException(String.format("Film with id: %s was not found!", filmId));
         }
     }
+
+    @Override
+    public void addLike(int filmId, int userId) {
+        for (Film film : getFilms()) {
+            if (film.getId() == filmId) {
+                film.getLikes().add(userId);
+            }
+        }
+    }
+
+    @Override
+    public void removeLike(int filmId, int userId) {
+        for (Film film : getFilms()) {
+            if (film.getId() == filmId) {
+                film.getLikes().remove(userId);
+            }
+        }
+    }
 }

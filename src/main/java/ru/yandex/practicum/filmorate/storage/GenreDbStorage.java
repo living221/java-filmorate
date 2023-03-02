@@ -7,15 +7,13 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class GenreDbStorage implements GenreStorage {
 
-    private final Logger log = LoggerFactory.getLogger(MpaDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
+    private final Logger log = LoggerFactory.getLogger(MpaDbStorage.class);
 
     public GenreDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -23,21 +21,31 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public List<Genre> getGenres() {
-        SqlRowSet genreRows = jdbcTemplate.queryForRowSet("select * from genres order by id");
-        List<Genre> genres = new ArrayList<>();
-        while (genreRows.next()) {
-            Genre genre = new Genre(
-                    genreRows.getInt("id"),
-                    genreRows.getString("name")
-            );
-            log.info("Найден жанр фильма: {} {}", genre.getId(), genre.getName());
-            genres.add(genre);
-        }
-        return genres;
+
+        String sql = "select * from genres order by id";
+
+        return jdbcTemplate.query(sql, new GenreMapper());
+
+//        SqlRowSet genreRows = jdbcTemplate.queryForRowSet("select * from genres order by id");
+//        List<Genre> genres = new ArrayList<>();
+//        while (genreRows.next()) {
+//            Genre genre = new Genre(
+//                    genreRows.getInt("id"),
+//                    genreRows.getString("name")
+//            );
+//            log.info("Найден жанр фильма: {} {}", genre.getId(), genre.getName());
+//            genres.add(genre);
+//        }
+//        return genres;
     }
 
     @Override
-    public Optional<Genre> getGenreById(int id) {
+    public Genre getGenreById(int id) {
+
+//        String sql = "select * from genres where id = ?";
+//
+//        return jdbcTemplate.queryForObject(sql, new GenreMapper(), id);
+
         SqlRowSet genreRows = jdbcTemplate.queryForRowSet("select * from genres where id = ?", id);
         if (genreRows.next()) {
             Genre genre = new Genre(
@@ -45,10 +53,10 @@ public class GenreDbStorage implements GenreStorage {
                     genreRows.getString("name")
             );
             log.info("Найден жанр фильма: {} {}", genre.getId(), genre.getName());
-            return Optional.of(genre);
+            return genre;
         } else {
             log.info("Жанр с идентификатором {} не найден.", id);
-            return Optional.empty();
+            return null;
         }
     }
 }

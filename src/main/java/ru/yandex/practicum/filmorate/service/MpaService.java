@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaDbStorage;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -21,12 +21,12 @@ public class MpaService {
         return mpaDbStorage.getMpas();
     }
 
-    public Optional<Mpa> getMpaById(int mpaId) {
+    public Mpa getMpaById(int mpaId) {
 
-        Optional<Mpa> mpaById = mpaDbStorage.getMpaById(mpaId);
-        if (mpaById.isEmpty()) {
+        Mpa mpaById = mpaDbStorage.getMpaById(mpaId);
+        if (Objects.isNull(mpaById)) {
             log.info("mpa wasn't found by id: mpa with id {} was not found.", mpaId);
-            throw new MpaNotFoundException(String.format("Mpa with id: %s was not found!", mpaById));
+            throw new MpaNotFoundException(String.format("Mpa with id: %s was not found!", mpaId));
         }
         return mpaById;
     }

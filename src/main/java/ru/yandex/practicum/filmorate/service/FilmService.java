@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 public class FilmService {
 
     private final FilmStorage filmStorage;
-    private final MpaStorage mpaStorage;
     private final UserStorage userStorage;
 
     public List<Film> getFilms() {
@@ -70,7 +68,7 @@ public class FilmService {
 
         for (Film film : filmStorage.getFilms()) {
             if (filmId == film.getId()) {
-                film.getLikes().add(userId);
+                filmStorage.addLike(filmId, userId);
             }
         }
     }
@@ -86,7 +84,7 @@ public class FilmService {
                     throw new ValidationException(String.format("no likes from user with id %s found for " +
                             "film with id %s.", userId, filmId));
                 } else {
-                    film.getLikes().remove(userId);
+                    filmStorage.removeLike(filmId, userId);
                 }
             }
         }

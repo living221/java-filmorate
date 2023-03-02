@@ -1,14 +1,18 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 
 import java.time.LocalDate;
 
@@ -16,21 +20,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class FilmControllerTest {
 
+    private final UserDbStorage userStorage;
+    private final FilmDbStorage filmStorage;
     private Film film;
     @Autowired
     private FilmController controller;
 
     @BeforeEach
     public void init() {
-        film = new Film();
-        film.setId(1);
-        film.setName("film name");
-        film.setDescription("film description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(100);
+        film = Film.builder()
+                .id(1)
+                .name("film name")
+                .description("film description")
+                .releaseDate(LocalDate.of(2000, 1, 1))
+                .duration(100)
+                .build();
     }
 
     @Test

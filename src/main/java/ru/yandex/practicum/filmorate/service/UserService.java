@@ -8,10 +8,8 @@ import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -29,6 +27,10 @@ public class UserService {
     }
 
     public User updateUser(User user) {
+        if (!userExists(user.getId())) {
+            log.debug("user service update user error: user with id {} was not found.", user.getId());
+            throw new UserNotFoundException(String.format("User with id: %s was not found!", user.getId()));
+        }
         return userStorage.update(user);
     }
 
@@ -47,18 +49,14 @@ public class UserService {
             log.debug("trying to add users with the same id to their friends list: id {}", userId);
             throw new ValidationException(String.format("Users with the same cannot be friends, id: %s", userId));
         }
-
-        for (User user : userStorage.getUsers()) {
-            if (userId == user.getId()) {
-                user.getFriends().add(friendId);
+        for (User friend : userStorage.getFriends(userId)) {
+            if (friend.getId() == friendId) {
+                log.debug("user with id: {} already have user with id: {} in friend list", userId, friendId);
+                throw new ValidationException(String.format("user with id: %s already have user with id: %s " +
+                        "in friend list", userId, friendId));
             }
         }
-
-        for (User user : userStorage.getUsers()) {
-            if (friendId == user.getId()) {
-                user.getFriends().add(userId);
-            }
-        }
+        userStorage.addFriend(userId, friendId);
     }
 
     public void removeFromFriends(int userId, int friendId) {
@@ -76,18 +74,7 @@ public class UserService {
             log.debug("trying to remove from friend list users with the same id: id {}", userId);
             throw new UserNotFoundException(String.format("Users with the same id cannot be friends, id: %s", userId));
         }
-
-        for (User user : userStorage.getUsers()) {
-            if (userId == user.getId()) {
-                user.getFriends().remove(userId);
-            }
-        }
-
-        for (User user : userStorage.getUsers()) {
-            if (friendId == user.getId()) {
-                user.getFriends().remove(friendId);
-            }
-        }
+        userStorage.removeFromFriends(userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
@@ -97,11 +84,7 @@ public class UserService {
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
-        return userStorage
-                .getUsers()
-                .stream()
-                .filter(u -> u.getFriends().contains(userId))
-                .collect(Collectors.toList());
+        return userStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(int userId, int otherId) {
@@ -119,22 +102,10 @@ public class UserService {
             log.debug("trying to get common friends for users with the same id: id {}", userId);
             throw new ValidationException(String.format("Users with the same id cannot be friends, id: %s", userId));
         }
-        ArrayList<User> commonFriends = new ArrayList<>();
-
-        Set<Integer> friendsOfUser = userStorage.getUserById(userId).getFriends();
-
-        Set<Integer> friendsOfOtherUser = userStorage.getUserById(otherId).getFriends();
-
-        for (Integer commonId : friendsOfUser) {
-            if (friendsOfOtherUser.contains(commonId)) {
-                commonFriends.add(userStorage.getUserById(commonId));
-            }
-        }
-
-        return commonFriends;
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
-    public User getUserById(int userId) {
+    public Optional<User> getUserById(int userId) {
         if (!userExists(userId)) {
             log.debug("user service get user by id error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));

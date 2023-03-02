@@ -13,4 +13,8 @@ public interface FilmStorage {
     Film update(Film film);
 
     Optional<Film> getFilmById(int filmId);
+
+    void addLike(int filmId, int userId);
+
+    void removeLike(int filmId, int userId);
 }
