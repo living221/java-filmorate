@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.genre;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
 
 import java.util.List;
 
@@ -25,26 +26,10 @@ public class GenreDbStorage implements GenreStorage {
         String sql = "select * from genres order by id";
 
         return jdbcTemplate.query(sql, new GenreMapper());
-
-//        SqlRowSet genreRows = jdbcTemplate.queryForRowSet("select * from genres order by id");
-//        List<Genre> genres = new ArrayList<>();
-//        while (genreRows.next()) {
-//            Genre genre = new Genre(
-//                    genreRows.getInt("id"),
-//                    genreRows.getString("name")
-//            );
-//            log.info("Найден жанр фильма: {} {}", genre.getId(), genre.getName());
-//            genres.add(genre);
-//        }
-//        return genres;
     }
 
     @Override
     public Genre getGenreById(int id) {
-
-//        String sql = "select * from genres where id = ?";
-//
-//        return jdbcTemplate.queryForObject(sql, new GenreMapper(), id);
 
         SqlRowSet genreRows = jdbcTemplate.queryForRowSet("select * from genres where id = ?", id);
         if (genreRows.next()) {

@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -23,10 +25,12 @@ public class UserService {
     }
 
     public User createUser(User user) {
+        userValidation(user);
         return userStorage.create(user);
     }
 
     public User updateUser(User user) {
+        userValidation(user);
         if (!userExists(user.getId())) {
             log.debug("user service update user error: user with id {} was not found.", user.getId());
             throw new UserNotFoundException(String.format("User with id: %s was not found!", user.getId()));
@@ -121,5 +125,31 @@ public class UserService {
             }
         }
         return false;
+    }
+
+    private void userValidation(User user) {
+        if (Objects.isNull(user.getEmail()) || user.getEmail().isBlank()) {
+            log.debug("user validation error: user with email {} was attempted to create.", user.getEmail());
+            throw new ValidationException("User email cannot be empty.");
+        }
+        if (!user.getEmail().contains("@")) {
+            log.debug("user validation error: user with email {} was attempted to create.", user.getEmail());
+            throw new ValidationException("User email have to contain '@' sign.");
+        }
+        if (user.getLogin() == null || user.getLogin().isBlank()) {
+            log.debug("user validation error: user with login {} was attempted to create.", user.getLogin());
+            throw new ValidationException("User login cannot be empty or blank.");
+        }
+        if (user.getLogin().contains(" ")) {
+            log.debug("user validation error: user with login {} was attempted to create.", user.getLogin());
+            throw new ValidationException("User login cannot have spaces in it.");
+        }
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            log.debug("user validation error: user with birthday {} was attempted to create.", user.getBirthday());
+            throw new ValidationException("User birthday cannot be in the future");
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }

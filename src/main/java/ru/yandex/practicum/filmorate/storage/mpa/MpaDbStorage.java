@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.mpa;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class MpaDbStorage implements MpaStorage {
@@ -23,33 +22,13 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public List<Mpa> getMpas() {
-
         String sql = "select * from mpas order by id";
 
         return jdbcTemplate.query(sql, new MpaMapper());
-
-//        SqlRowSet mpaRows = jdbcTemplate.queryForRowSet("select * from mpas order by id");
-//        List<Mpa> mpas = new ArrayList<>();
-//        while (mpaRows.next()) {
-//            Mpa mpa = new Mpa(
-//                    mpaRows.getInt("id"),
-//                    mpaRows.getString("name")
-//            );
-//            log.info("Найден mpa рейтинг: {} {}", mpa.getId(), mpa.getName());
-//            mpas.add(mpa);
-//        }
-//        return mpas;
     }
 
     @Override
     public Mpa getMpaById(int id) {
-
-//        String sql = "select * from mpas where id = ?";
-//
-//
-//            return jdbcTemplate.queryForObject(sql, new MpaMapper(), id);
-//
-
         SqlRowSet mpaRows = jdbcTemplate.queryForRowSet("select * from mpas where id = ?", id);
         if (mpaRows.next()) {
             Mpa mpa = new Mpa(

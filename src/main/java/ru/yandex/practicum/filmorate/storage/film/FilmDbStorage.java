@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaMapper;
 
 import java.util.HashSet;
 import java.util.List;
@@ -31,22 +32,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa_id, m.id, m.name " +
                 "FROM films f JOIN mpas m ON f.mpa_id = m.id";
 
-//        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql);
-//        List<Film> films = new ArrayList<>();
-
         List<Film> films = jdbcTemplate.query(sql, new FilmMapper());
-
-//        while (filmRows.next()) {
-//            Film film = Film.builder()
-//                    .id(filmRows.getInt("id"))
-//                    .name(filmRows.getString("name"))
-//                    .description(filmRows.getString("description"))
-//                    .releaseDate(filmRows.getDate("release_date").toLocalDate())
-//                    .duration(filmRows.getInt("duration"))
-//                    .rate(filmRows.getInt("rate"))
-//                    .build();
-//            films.add(film);
-//        }
 
         for (Film film : films) {
             film.setMpa(getMpaById(film.getId()));
@@ -73,6 +59,7 @@ public class FilmDbStorage implements FilmStorage {
             for (Genre genre : genres) {
                 jdbcTemplate.update(sqlGenres, filmId, genre.getId());
             }
+            film.setGenres(getGenresById(filmId));
         }
 
         String sqlLikes = "insert into likes (user_id, film_id) values (?, ?)";
@@ -81,11 +68,12 @@ public class FilmDbStorage implements FilmStorage {
             for (Integer userId : likes) {
                 jdbcTemplate.update(sqlLikes, userId, filmId);
             }
+            film.setLikes(getLikesByFilmId(filmId));
         }
 
-        film.setGenres(getGenresById(filmId));
-        film.setMpa(getMpaById(film.getId()));
-        film.setLikes(getLikesByFilmId(filmId));
+        if (film.getMpa() != null) {
+            film.setMpa(getMpaById(film.getId()));
+        }
         return film;
     }
 

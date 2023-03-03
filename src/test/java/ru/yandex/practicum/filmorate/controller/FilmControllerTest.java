@@ -11,8 +11,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.UserDbStorage;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 
@@ -24,9 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class FilmControllerTest {
-
-    private final UserDbStorage userStorage;
-    private final FilmDbStorage filmStorage;
     private Film film;
     @Autowired
     private FilmController controller;
@@ -39,6 +35,7 @@ class FilmControllerTest {
                 .description("film description")
                 .releaseDate(LocalDate.of(2000, 1, 1))
                 .duration(100)
+                .mpa(new Mpa(4, null))
                 .build();
     }
 
