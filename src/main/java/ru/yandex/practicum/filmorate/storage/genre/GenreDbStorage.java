@@ -37,10 +37,10 @@ public class GenreDbStorage implements GenreStorage {
                     genreRows.getInt("id"),
                     genreRows.getString("name")
             );
-            log.info("Найден жанр фильма: {} {}", genre.getId(), genre.getName());
+            log.info("Genre found: {} {}", genre.getId(), genre.getName());
             return genre;
         } else {
-            log.info("Жанр с идентификатором {} не найден.", id);
+            log.info("Genre with id: {} not found.", id);
             return null;
         }
     }

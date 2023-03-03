@@ -35,10 +35,10 @@ public class MpaDbStorage implements MpaStorage {
                     mpaRows.getInt("id"),
                     mpaRows.getString("name")
             );
-            log.info("Найден mpa рейтинг: {} {}", mpa.getId(), mpa.getName());
+            log.info("MPA found: {} {}", mpa.getId(), mpa.getName());
             return mpa;
         } else {
-            log.info("Mpa рейтинг с идентификатором {} не найден.", id);
+            log.info("MPA with id: {} not found.", id);
             return null;
         }
     }
