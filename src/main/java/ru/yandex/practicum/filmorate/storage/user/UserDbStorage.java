@@ -14,16 +14,18 @@ import java.util.Optional;
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final UserMapper userMapper;
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
+    public UserDbStorage(JdbcTemplate jdbcTemplate, UserMapper userMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userMapper = userMapper;
     }
 
     @Override
     public List<User> getUsers() {
-        String sql = "SELECT * FROM USERS";
+        String sql = "SELECT u.id, u.email, u.login, u.name, u.birthday FROM users u";
 
-        return jdbcTemplate.query(sql, new UserMapper());
+        return jdbcTemplate.query(sql, userMapper);
     }
 
     @Override
@@ -40,7 +42,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        String sql = "update users set email = ?, login = ?, name = ?, birthday = ? where id = ?";
+        String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
 
         int update = jdbcTemplate.update(sql,
                 user.getEmail(),
@@ -59,38 +61,38 @@ public class UserDbStorage implements UserStorage {
     @Override
     public Optional<User> getUserById(int userId) {
 
-        String sql = "SELECT * FROM USERS WHERE ID = ?";
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, new UserMapper(), userId));
+        String sql = "SELECT u.id, u.email, u.login, u.name, u.birthday FROM users u WHERE id = ?";
+        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, userMapper, userId));
     }
 
     @Override
     public List<User> getFriends(int userId) {
 
-        String sql = "select * from users " +
-                "where id in (select f.friend_id from friendship f join users u on u.id = f.user_id where u.id = ?)";
+        String sql = "SELECT u.id, u.email, u.login, u.name, u.birthday FROM users u " +
+                "WHERE id IN (SELECT f.friend_id FROM friendship f JOIN users u ON u.id = f.user_id WHERE u.id = ?)";
 
-        return jdbcTemplate.query(sql, new UserMapper(), userId);
+        return jdbcTemplate.query(sql, userMapper, userId);
     }
 
     @Override
     public List<User> getCommonFriends(int userId, int otherId) {
-        String sql = "select * from users where id in " +
-                "(select f.friend_id from friendship f JOIN users u on u.id = f.user_id where u.id = ?)" +
-                " and id in (select f.friend_id FROM friendship f JOIN users u on u.id = f.user_id where u.id = ?)";
+        String sql = "SELECT u.id, u.email, u.login, u.name, u.birthday FROM users u WHERE id IN " +
+                "(SELECT f.friend_id FROM friendship f JOIN users u ON u.id = f.user_id WHERE u.id = ?)" +
+                " AND id IN (SELECT f.friend_id FROM friendship f JOIN users u ON u.id = f.user_id WHERE u.id = ?)";
 
-        return jdbcTemplate.query(sql, new UserMapper(), userId, otherId);
+        return jdbcTemplate.query(sql, userMapper, userId, otherId);
     }
 
     @Override
     public void addFriend(int userId, int friendId) {
-        final String sql = "insert into friendship (user_id, friend_id) values (?, ?)";
+        final String sql = "INSERT INTO friendship (user_id, friend_id) VALUES (?, ?)";
 
         jdbcTemplate.update(sql, userId, friendId);
     }
 
     @Override
     public void removeFromFriends(int userId, int friendId) {
-        final String sql = "delete from friendship where user_id = ? and friend_id = ?";
+        final String sql = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
 
         jdbcTemplate.update(sql, userId, friendId);
     }

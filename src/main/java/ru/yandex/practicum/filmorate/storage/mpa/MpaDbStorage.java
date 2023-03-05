@@ -14,22 +14,24 @@ public class MpaDbStorage implements MpaStorage {
 
     private final Logger log = LoggerFactory.getLogger(MpaDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
+    private final MpaMapper mpaMapper;
 
-    public MpaDbStorage(JdbcTemplate jdbcTemplate) {
+    public MpaDbStorage(JdbcTemplate jdbcTemplate, MpaMapper mpaMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.mpaMapper = mpaMapper;
     }
 
 
     @Override
     public List<Mpa> getMpas() {
-        String sql = "select * from mpas order by id";
+        String sql = "SELECT m.id, m.name FROM mpas m ORDER BY id";
 
-        return jdbcTemplate.query(sql, new MpaMapper());
+        return jdbcTemplate.query(sql, mpaMapper);
     }
 
     @Override
     public Mpa getMpaById(int id) {
-        SqlRowSet mpaRows = jdbcTemplate.queryForRowSet("select * from mpas where id = ?", id);
+        SqlRowSet mpaRows = jdbcTemplate.queryForRowSet("SELECT m.id, m.name FROM mpas m WHERE id = ?", id);
         if (mpaRows.next()) {
             Mpa mpa = new Mpa(
                     mpaRows.getInt("id"),

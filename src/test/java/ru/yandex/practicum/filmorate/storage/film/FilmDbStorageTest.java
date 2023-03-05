@@ -43,7 +43,6 @@ class FilmDbStorageTest {
         genres.add(new Genre(2, null));
         genres.add(new Genre(3, null));
 
-
         film = Film.builder()
                 .id(1)
                 .name("film name")
@@ -129,6 +128,7 @@ class FilmDbStorageTest {
 
         if (optFilm.isPresent()) {
             filmFromDb = optFilm.get();
+
             assertEquals(filmFromDb.getLikes().size(), 1);
         } else {
             fail();
@@ -150,6 +150,7 @@ class FilmDbStorageTest {
 
         if (optFilm.isPresent()) {
             filmFromDb = optFilm.get();
+
             assertEquals(filmFromDb.getLikes().size(), 0);
         } else {
             fail();

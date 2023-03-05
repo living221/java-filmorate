@@ -31,21 +31,21 @@ public class UserService {
 
     public User updateUser(User user) {
         userValidation(user);
-        if (!userExists(user.getId())) {
-            log.debug("user service update user error: user with id {} was not found.", user.getId());
+        if (userNotExists(user.getId())) {
+            log.error("user service update user error: user with id {} was not found.", user.getId());
             throw new UserNotFoundException(String.format("User with id: %s was not found!", user.getId()));
         }
         return userStorage.update(user);
     }
 
     public void addToFriends(int userId, int friendId) {
-        if (!userExists(userId)) {
-            log.debug("user service add to friend list error: user with id {} was not found.", userId);
+        if (userNotExists(userId)) {
+            log.error("user service add to friend list error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
-        if (!userExists(friendId)) {
-            log.debug("user service add to friend list error: user with id {} was not found.", friendId);
+        if (userNotExists(friendId)) {
+            log.error("user service add to friend list error: user with id {} was not found.", friendId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", friendId));
         }
 
@@ -64,13 +64,13 @@ public class UserService {
     }
 
     public void removeFromFriends(int userId, int friendId) {
-        if (!userExists(userId)) {
-            log.debug("user service remove from friend list error: user with id {} was not found.", userId);
+        if (userNotExists(userId)) {
+            log.error("user service remove from friend list error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
-        if (!userExists(friendId)) {
-            log.debug("user service remove from friend list error: user with id {} was not found.", friendId);
+        if (userNotExists(friendId)) {
+            log.error("user service remove from friend list error: user with id {} was not found.", friendId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", friendId));
         }
 
@@ -83,8 +83,8 @@ public class UserService {
 
     public List<User> getFriends(int userId) {
 
-        if (!userExists(userId)) {
-            log.debug("user service get friend list error: user with id {} was not found.", userId);
+        if (userNotExists(userId)) {
+            log.error("user service get friend list error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
@@ -92,13 +92,13 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(int userId, int otherId) {
-        if (!userExists(userId)) {
-            log.debug("user service get common friends error: user with id {} was not found.", userId);
+        if (userNotExists(userId)) {
+            log.error("user service get common friends error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
-        if (!userExists(otherId)) {
-            log.debug("user service get common friends error: user with id {} was not found.", otherId);
+        if (userNotExists(otherId)) {
+            log.error("user service get common friends error: user with id {} was not found.", otherId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", otherId));
         }
 
@@ -110,45 +110,45 @@ public class UserService {
     }
 
     public Optional<User> getUserById(int userId) {
-        if (!userExists(userId)) {
-            log.debug("user service get user by id error: user with id {} was not found.", userId);
+        if (userNotExists(userId)) {
+            log.error("user service get user by id error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
         return userStorage.getUserById(userId);
     }
 
-    public boolean userExists(int userId) {
+    public boolean userNotExists(int userId) {
         for (User user : userStorage.getUsers()) {
             if (userId == user.getId()) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private void userValidation(User user) {
         if (Objects.isNull(user.getEmail()) || user.getEmail().isBlank()) {
-            log.debug("user validation error: user with email {} was attempted to create.", user.getEmail());
+            log.error("user validation error: user with email {} was attempted to create.", user.getEmail());
             throw new ValidationException("User email cannot be empty.");
         }
         if (!user.getEmail().contains("@")) {
-            log.debug("user validation error: user with email {} was attempted to create.", user.getEmail());
+            log.error("user validation error: user with email {} was attempted to create.", user.getEmail());
             throw new ValidationException("User email have to contain '@' sign.");
         }
-        if (user.getLogin() == null || user.getLogin().isBlank()) {
-            log.debug("user validation error: user with login {} was attempted to create.", user.getLogin());
+        if (Objects.isNull(user.getLogin()) || user.getLogin().isBlank()) {
+            log.error("user validation error: user with login {} was attempted to create.", user.getLogin());
             throw new ValidationException("User login cannot be empty or blank.");
         }
         if (user.getLogin().contains(" ")) {
-            log.debug("user validation error: user with login {} was attempted to create.", user.getLogin());
+            log.error("user validation error: user with login {} was attempted to create.", user.getLogin());
             throw new ValidationException("User login cannot have spaces in it.");
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.debug("user validation error: user with birthday {} was attempted to create.", user.getBirthday());
+            log.error("user validation error: user with birthday {} was attempted to create.", user.getBirthday());
             throw new ValidationException("User birthday cannot be in the future");
         }
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
     }

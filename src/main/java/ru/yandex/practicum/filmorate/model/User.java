@@ -16,9 +16,9 @@ import java.util.Set;
 @Builder
 public class User {
 
-    private int id;
-
     private final Set<Integer> friends = new HashSet<>();
+
+    private int id;
 
     @Email
     @NotBlank

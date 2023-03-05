@@ -36,16 +36,16 @@ public class FilmService {
 
     public Film updateFilm(Film film) {
         filmValidation(film);
-        if (!filmExists(film.getId())) {
-            log.debug("film service update film error: film with id {} was not found.", film.getId());
+        if (filmNotExists(film.getId())) {
+            log.error("film service update film error: film with id {} was not found.", film.getId());
             throw new FilmNotFoundException(String.format("Film with id: %s was not found!", film.getId()));
         }
         return filmStorage.update(film);
     }
 
     public Optional<Film> getFilmById(int filmId) {
-        if (!filmExists(filmId)) {
-            log.debug("film service get film by id error: film with id {} was not found.", filmId);
+        if (filmNotExists(filmId)) {
+            log.error("film service get film by id error: film with id {} was not found.", filmId);
             throw new FilmNotFoundException(String.format("Film with id: %s was not found!", filmId));
         }
         return filmStorage.getFilmById(filmId);
@@ -58,7 +58,7 @@ public class FilmService {
             Optional<Film> filmById = filmStorage.getFilmById(filmId);
             if (filmById.isPresent()) {
                 if (filmById.get().getLikes().contains(userId)) {
-                    log.debug("film service add like to film error: " +
+                    log.error("film service add like to film error: " +
                             "user with id {} already add like to film with id {}.", userId, filmId);
                     throw new ValidationException(String.format("user with id %s already add like " +
                             "to film with id %s.", userId, filmId));
@@ -79,7 +79,7 @@ public class FilmService {
         for (Film film : filmStorage.getFilms()) {
             if (filmId == film.getId()) {
                 if (!(film.getLikes().contains(userId))) {
-                    log.debug("film service remove like from film error: " +
+                    log.error("film service remove like from film error: " +
                             "can't find likes from user with id {} in film with id {} likes.", userId, filmId);
                     throw new ValidationException(String.format("no likes from user with id %s found for " +
                             "film with id %s.", userId, filmId));
@@ -94,7 +94,7 @@ public class FilmService {
     public List<Film> getPopularFilms(int count) {
 
         if (count <= 0) {
-            log.debug("film service get popular films error: " +
+            log.error("film service get popular films error: " +
                     "film count can't be negative, count: {}.", count);
             throw new ValidationException(String.format("film count can't be negative, count: %s.", count));
         }
@@ -120,41 +120,41 @@ public class FilmService {
         return false;
     }
 
-    public boolean filmExists(int filmId) {
+    public boolean filmNotExists(int filmId) {
         for (Film film : filmStorage.getFilms()) {
             if (filmId == film.getId()) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private void validateFilmAndUser(int filmId, int userId) {
-        if (!filmExists(filmId)) {
-            log.debug("film service add like to film error: film with id {} was not found.", filmId);
+        if (filmNotExists(filmId)) {
+            log.error("film service add like to film error: film with id {} was not found.", filmId);
             throw new FilmNotFoundException(String.format("Film with id: %s was not found!", filmId));
         }
         if (!userExists(userId)) {
-            log.debug("film service add like to film error: user with id {} was not found.", userId);
+            log.error("film service add like to film error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
     }
 
     private void filmValidation(Film film) {
         if (Objects.isNull(film.getName()) || film.getName().isBlank()) {
-            log.debug("film validation error: film with name {} was attempted to add.", film.getName());
+            log.error("film validation error: film with name {} was attempted to add.", film.getName());
             throw new ValidationException("Film name cannot be empty!");
         }
         if (film.getDescription().length() > 200) {
-            log.debug("film validation error: film with description {} was attempted to add.", film.getDescription());
+            log.error("film validation error: film with description {} was attempted to add.", film.getDescription());
             throw new ValidationException("Film description length cannot be more than 200 signs.");
         }
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.debug("film validation error: film with release date {} was attempted to add.", film.getReleaseDate());
+            log.error("film validation error: film with release date {} was attempted to add.", film.getReleaseDate());
             throw new ValidationException("Film release date cannot be before 28.12.1895");
         }
         if (film.getDuration() <= 0) {
-            log.debug("film validation error: film with duration {} was attempted to add.", film.getDuration());
+            log.error("film validation error: film with duration {} was attempted to add.", film.getDuration());
             throw new ValidationException("Film duration cannot be negative or zero.");
         }
     }

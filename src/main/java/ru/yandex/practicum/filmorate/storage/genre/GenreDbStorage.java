@@ -15,23 +15,25 @@ public class GenreDbStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final Logger log = LoggerFactory.getLogger(MpaDbStorage.class);
+    private final GenreMapper genreMapper;
 
-    public GenreDbStorage(JdbcTemplate jdbcTemplate) {
+    public GenreDbStorage(JdbcTemplate jdbcTemplate, GenreMapper genreMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.genreMapper = genreMapper;
     }
 
     @Override
     public List<Genre> getGenres() {
 
-        String sql = "select * from genres order by id";
+        String sql = "SELECT g.id, g.name FROM genres g ORDER BY id";
 
-        return jdbcTemplate.query(sql, new GenreMapper());
+        return jdbcTemplate.query(sql, genreMapper);
     }
 
     @Override
     public Genre getGenreById(int id) {
 
-        SqlRowSet genreRows = jdbcTemplate.queryForRowSet("select * from genres where id = ?", id);
+        SqlRowSet genreRows = jdbcTemplate.queryForRowSet("SELECT g.id, g.name FROM genres g WHERE id = ?", id);
         if (genreRows.next()) {
             Genre genre = new Genre(
                     genreRows.getInt("id"),
