@@ -6,12 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -25,21 +25,27 @@ public class UserService {
     }
 
     public User createUser(User user) {
+        userValidation(user);
         return userStorage.create(user);
     }
 
     public User updateUser(User user) {
+        userValidation(user);
+        if (userNotExists(user.getId())) {
+            log.error("user service update user error: user with id {} was not found.", user.getId());
+            throw new UserNotFoundException(String.format("User with id: %s was not found!", user.getId()));
+        }
         return userStorage.update(user);
     }
 
     public void addToFriends(int userId, int friendId) {
-        if (!userExists(userId)) {
-            log.debug("user service add to friend list error: user with id {} was not found.", userId);
+        if (userNotExists(userId)) {
+            log.error("user service add to friend list error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
-        if (!userExists(friendId)) {
-            log.debug("user service add to friend list error: user with id {} was not found.", friendId);
+        if (userNotExists(friendId)) {
+            log.error("user service add to friend list error: user with id {} was not found.", friendId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", friendId));
         }
 
@@ -47,28 +53,24 @@ public class UserService {
             log.debug("trying to add users with the same id to their friends list: id {}", userId);
             throw new ValidationException(String.format("Users with the same cannot be friends, id: %s", userId));
         }
-
-        for (User user : userStorage.getUsers()) {
-            if (userId == user.getId()) {
-                user.getFriends().add(friendId);
+        for (User friend : userStorage.getFriends(userId)) {
+            if (friend.getId() == friendId) {
+                log.debug("user with id: {} already have user with id: {} in friend list", userId, friendId);
+                throw new ValidationException(String.format("user with id: %s already have user with id: %s " +
+                        "in friend list", userId, friendId));
             }
         }
-
-        for (User user : userStorage.getUsers()) {
-            if (friendId == user.getId()) {
-                user.getFriends().add(userId);
-            }
-        }
+        userStorage.addFriend(userId, friendId);
     }
 
     public void removeFromFriends(int userId, int friendId) {
-        if (!userExists(userId)) {
-            log.debug("user service remove from friend list error: user with id {} was not found.", userId);
+        if (userNotExists(userId)) {
+            log.error("user service remove from friend list error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
-        if (!userExists(friendId)) {
-            log.debug("user service remove from friend list error: user with id {} was not found.", friendId);
+        if (userNotExists(friendId)) {
+            log.error("user service remove from friend list error: user with id {} was not found.", friendId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", friendId));
         }
 
@@ -76,42 +78,27 @@ public class UserService {
             log.debug("trying to remove from friend list users with the same id: id {}", userId);
             throw new UserNotFoundException(String.format("Users with the same id cannot be friends, id: %s", userId));
         }
-
-        for (User user : userStorage.getUsers()) {
-            if (userId == user.getId()) {
-                user.getFriends().remove(userId);
-            }
-        }
-
-        for (User user : userStorage.getUsers()) {
-            if (friendId == user.getId()) {
-                user.getFriends().remove(friendId);
-            }
-        }
+        userStorage.removeFromFriends(userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
 
-        if (!userExists(userId)) {
-            log.debug("user service get friend list error: user with id {} was not found.", userId);
+        if (userNotExists(userId)) {
+            log.error("user service get friend list error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
-        return userStorage
-                .getUsers()
-                .stream()
-                .filter(u -> u.getFriends().contains(userId))
-                .collect(Collectors.toList());
+        return userStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(int userId, int otherId) {
-        if (!userExists(userId)) {
-            log.debug("user service get common friends error: user with id {} was not found.", userId);
+        if (userNotExists(userId)) {
+            log.error("user service get common friends error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
-        if (!userExists(otherId)) {
-            log.debug("user service get common friends error: user with id {} was not found.", otherId);
+        if (userNotExists(otherId)) {
+            log.error("user service get common friends error: user with id {} was not found.", otherId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", otherId));
         }
 
@@ -119,36 +106,50 @@ public class UserService {
             log.debug("trying to get common friends for users with the same id: id {}", userId);
             throw new ValidationException(String.format("Users with the same id cannot be friends, id: %s", userId));
         }
-        ArrayList<User> commonFriends = new ArrayList<>();
-
-        Set<Integer> friendsOfUser = userStorage.getUserById(userId).getFriends();
-
-        Set<Integer> friendsOfOtherUser = userStorage.getUserById(otherId).getFriends();
-
-        for (Integer commonId : friendsOfUser) {
-            if (friendsOfOtherUser.contains(commonId)) {
-                commonFriends.add(userStorage.getUserById(commonId));
-            }
-        }
-
-        return commonFriends;
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
-    public User getUserById(int userId) {
-        if (!userExists(userId)) {
-            log.debug("user service get user by id error: user with id {} was not found.", userId);
+    public Optional<User> getUserById(int userId) {
+        if (userNotExists(userId)) {
+            log.error("user service get user by id error: user with id {} was not found.", userId);
             throw new UserNotFoundException(String.format("User with id: %s was not found!", userId));
         }
 
         return userStorage.getUserById(userId);
     }
 
-    public boolean userExists(int userId) {
+    public boolean userNotExists(int userId) {
         for (User user : userStorage.getUsers()) {
             if (userId == user.getId()) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
+    }
+
+    private void userValidation(User user) {
+        if (Objects.isNull(user.getEmail()) || user.getEmail().isBlank()) {
+            log.error("user validation error: user with email {} was attempted to create.", user.getEmail());
+            throw new ValidationException("User email cannot be empty.");
+        }
+        if (!user.getEmail().contains("@")) {
+            log.error("user validation error: user with email {} was attempted to create.", user.getEmail());
+            throw new ValidationException("User email have to contain '@' sign.");
+        }
+        if (Objects.isNull(user.getLogin()) || user.getLogin().isBlank()) {
+            log.error("user validation error: user with login {} was attempted to create.", user.getLogin());
+            throw new ValidationException("User login cannot be empty or blank.");
+        }
+        if (user.getLogin().contains(" ")) {
+            log.error("user validation error: user with login {} was attempted to create.", user.getLogin());
+            throw new ValidationException("User login cannot have spaces in it.");
+        }
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            log.error("user validation error: user with birthday {} was attempted to create.", user.getBirthday());
+            throw new ValidationException("User birthday cannot be in the future");
+        }
+        if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }

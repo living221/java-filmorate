@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
@@ -16,21 +18,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class UserControllerTest {
-
     private User user;
     @Autowired
     private UserController controller;
 
     @BeforeEach
     public void init() {
-        user = new User();
-        user.setId(1);
-        user.setName("John Smith");
-        user.setLogin("login");
-        user.setEmail("example@email.com");
-        user.setBirthday(LocalDate.of(1913, 5, 17));
+        user = User.builder()
+                .id(1)
+                .name("John Smith")
+                .login("login")
+                .email("example@email.com")
+                .birthday(LocalDate.of(1913, 5, 17))
+                .build();
     }
 
     @Test
